@@ -56,12 +56,14 @@ def printMenu():
     print("*******************************************")
     print("Bienvenido")
     print("1- Inicializar Analizador")
-    print("2- Cargar información de buses de singapur")
-    print("3- Calcular componentes conectados")
-    print("4- Establecer estación base:")
-    print("5- Hay camino entre estacion base y estación: ")
-    print("6- Ruta de costo mínimo desde la estación base y estación: ")
-    print("7- Estación que sirve a mas rutas: ")
+    print("2- Cargar información de viajes en bicicleta")
+    print("3- Conocer la cantidad de clusters de viajes")
+    print("4- Obtener información sobre ruta turística circular")
+    print("5- Conocer las estaciones críticas ")
+    print("6- Conocer ruta turística por resistencia ")
+    print("7- Recomendar rutas por rango de edad ")
+    print("8- Identificar estaciones para publicidad ")
+    print("9- Identificar bicicletas para mantenimiento ")    
     print("0- Salir")
     print("*******************************************")
 
@@ -78,8 +80,6 @@ def optionTwo():
 
 
 def optionThree():
-    station1 = input("Primera estación: ")
-    station2 = input("Segunda estación: ") 
     sc = controller.getstrongComponents(cont["graph"])  
     print('\nEl total de clusters en el grafo es: ' +
           str(controller.getnumSCC(sc)))
@@ -117,6 +117,16 @@ def optionSeven():
     print('Estación: ' + maxvert + '  Total rutas servidas: '
           + str(maxdeg))
 
+def optionEight():
+    maxvert, maxdeg = controller.servedRoutes(cont)
+    print('Estación: ' + maxvert + '  Total rutas servidas: '
+          + str(maxdeg))
+
+def optionNine():
+    maxvert, maxdeg = controller.servedRoutes(cont)
+    print('Estación: ' + maxvert + '  Total rutas servidas: '
+          + str(maxdeg))
+
 
 """
 Menu principal
@@ -135,27 +145,34 @@ while True:
         print("Tiempo de ejecución: " + str(executiontime))
 
     elif int(inputs[0]) == 3:
+        station1 = input("Primera estación: ")
+        station2 = input("Segunda estación: ") 
         executiontime = timeit.timeit(optionThree, number=1)
         print("Tiempo de ejecución: " + str(executiontime))
 
     elif int(inputs[0]) == 4:
-        msg = "Estación Base: BusStopCode-ServiceNo (Ej: 75009-10): "
         initialStation = input(msg)
         executiontime = timeit.timeit(optionFour, number=1)
         print("Tiempo de ejecución: " + str(executiontime))
 
     elif int(inputs[0]) == 5:
-        destStation = input("Estación destino (Ej: 15151-10): ")
         executiontime = timeit.timeit(optionFive, number=1)
         print("Tiempo de ejecución: " + str(executiontime))
 
     elif int(inputs[0]) == 6:
-        destStation = input("Estación destino (Ej: 15151-10): ")
         executiontime = timeit.timeit(optionSix, number=1)
         print("Tiempo de ejecución: " + str(executiontime))
 
     elif int(inputs[0]) == 7:
         executiontime = timeit.timeit(optionSeven, number=1)
+        print("Tiempo de ejecución: " + str(executiontime))
+
+    elif int(inputs[0]) == 8:
+        executiontime = timeit.timeit(optionEight, number=1)
+        print("Tiempo de ejecución: " + str(executiontime))
+
+    elif int(inputs[0]) == 9:
+        executiontime = timeit.timeit(optionNine, number=1)
         print("Tiempo de ejecución: " + str(executiontime))
 
     else:

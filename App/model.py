@@ -41,14 +41,10 @@ de creacion y consulta sobre las estructuras de datos.
 # -----------------------------------------------------
 #                       API
 # -----------------------------------------------------
+
 def newAnalyzer():
     """ Inicializa el analizador
-
-   stops: Tabla de hash para guardar los vertices del grafo
-   connections: Grafo para representar las rutas entre estaciones
-   components: Almacena la informacion de los componentes conectados
-   paths: Estructura que almancena los caminos de costo minimo desde un
-           vertice determinado a todos los otros vértices del grafo
+   graph: Grafo para representar las estaciones
     """
     try:
         analyzer = {
@@ -61,20 +57,10 @@ def newAnalyzer():
         return analyzer
     except Exception as exp:
         error.reraise(exp, 'model:newAnalyzer')
+
 # Funciones para agregar informacion al grafo
 
 def addTrip(analyzer, trip):
-    """
-    Adiciona las estaciones al grafo como vertices y arcos entre las
-    estaciones adyacentes.
-
-    Los vertices tienen por nombre el identificador de la estacion
-    seguido de la ruta que sirve.  Por ejemplo:
-
-    75009-10
-
-    Si la estacion sirve otra ruta, se tiene: 75009-101
-    """
     try:
         origin = trip["start station id"]
         destination = trip["end station id"]
@@ -105,6 +91,7 @@ def addConnection(analyzer, origin, destination, duration):
     if edge is None:
         gr.addEdge(analyzer['graph'], origin, destination, duration)
     return analyzer        
+
 # ==============================
 # Funciones de consulta
 # ==============================
@@ -138,6 +125,7 @@ def sameCC(sc, station1, station2):
 # ==============================
 # Funciones de Comparacion
 # ==============================
+
 def compareStations(station1, station2):
     """
     Compara dos estaciones

@@ -50,6 +50,7 @@ def init():
 #  Funciones para la carga de datos y almacenamiento
 #  de datos en los modelos
 # ___________________________________________________
+
 def loadTrips(analyzer):
     for filename in os.listdir(cf.data_dir):
         if filename.endswith(".csv"):
@@ -58,14 +59,6 @@ def loadTrips(analyzer):
     return analyzer        
 
 def loadFile(analyzer, tripfile):
-    """
-    Carga los datos de los archivos CSV en el modelo.
-    Se crea un arco entre cada par de estaciones que
-    pertenecen al mismo servicio y van en el mismo sentido.
-
-    addRouteConnection crea conexiones entre diferentes rutas
-    servidas en una misma estación.
-    """
     tripfile = cf.data_dir + tripfile
     input_file = csv.DictReader(open(tripfile, encoding="utf-8"),
                                 delimiter=",")
@@ -77,16 +70,10 @@ def loadFile(analyzer, tripfile):
 # ___________________________________________________
 
 def totalStations(analyzer):
-    """
-    Total de paradas de autobus
-    """
     return model.totalStations(analyzer)
 
 
 def totalConnections(analyzer):
-    """
-    Total de enlaces entre las paradas
-    """
     return model.totalConnections(analyzer)
 
 def getstrongComponents(graph):
