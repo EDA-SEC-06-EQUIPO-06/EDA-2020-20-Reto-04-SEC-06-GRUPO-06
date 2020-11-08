@@ -27,6 +27,7 @@
 import config as cf
 from App import model
 import csv
+import os
 
 """
 El controlador se encarga de mediar entre la vista y el modelo.
@@ -36,16 +37,63 @@ del modelo en una sola respuesta.  Esta responsabilidad
 recae sobre el controlador.
 """
 
-# ___________________________________________________
-#  Inicializacion del catalogo
-# ___________________________________________________
+def init():
+    """
+    Llama la funcion de inicializacion  del modelo.
+    """
+    # analyzer es utilizado para interactuar con el modelo
+    analyzer = model.newAnalyzer()
+    return analyzer
 
 
 # ___________________________________________________
 #  Funciones para la carga de datos y almacenamiento
 #  de datos en los modelos
 # ___________________________________________________
+def loadTrips(analyzer):
+    for filename in os.listdir(cf.data_dir):
+        if filename.endswith(".csv"):
+           print("Cargando archivo: "+ filename)
+           loadFile(analyzer, filename)
+    return analyzer        
 
+def loadFile(analyzer, tripfile):
+    """
+    Carga los datos de los archivos CSV en el modelo.
+    Se crea un arco entre cada par de estaciones que
+    pertenecen al mismo servicio y van en el mismo sentido.
+
+    addRouteConnection crea conexiones entre diferentes rutas
+    servidas en una misma estación.
+    """
+    tripfile = cf.data_dir + tripfile
+    input_file = csv.DictReader(open(tripfile, encoding="utf-8"),
+                                delimiter=",")
+    for trip in input_file:
+        model.addTrip(analyzer, trip)
+    return analyzer
 # ___________________________________________________
 #  Funciones para consultas
 # ___________________________________________________
+
+def totalStations(analyzer):
+    """
+    Total de paradas de autobus
+    """
+    return model.totalStations(analyzer)
+
+
+def totalConnections(analyzer):
+    """
+    Total de enlaces entre las paradas
+    """
+    return model.totalConnections(analyzer)
+
+def getstrongComponents(graph):
+    return model.strongComponents(graph)
+
+def getnumSCC(sc):
+    return model.numSCC(sc)   
+
+def getsameCC(sc, station1, station2):
+    return model.sameCC(sc, station1, station2)
