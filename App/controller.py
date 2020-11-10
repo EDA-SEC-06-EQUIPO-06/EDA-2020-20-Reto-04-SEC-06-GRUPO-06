@@ -69,18 +69,27 @@ def loadFile(analyzer, tripfile):
 #  Funciones para consultas
 # ___________________________________________________
 
-def totalStations(analyzer):
-    return model.totalStations(analyzer)
+def totalStops(analyzer):
+    """
+    Total de paradas de autobus
+    """
+    return model.totalStops(analyzer)
 
 
 def totalConnections(analyzer):
+    """
+    Total de enlaces entre las paradas
+    """
     return model.totalConnections(analyzer)
 
-def getstrongComponents(graph):
-    return model.strongComponents(graph)
+def connectedComponents(analyzer):
+    """
+    Numero de componentes fuertemente conectados
+    """
+    return model.connectedComponents(analyzer)
 
-def getnumSCC(sc):
-    return model.numSCC(sc)   
-
-def getsameCC(sc, station1, station2):
-    return model.sameCC(sc, station1, station2)
+def getsameCC(analyzer, station1, station2):
+    """
+    Bool que informa si dos estaciones están en el mismo componente conectado.
+    """
+    return model.sameCC(analyzer, station1, station2)
