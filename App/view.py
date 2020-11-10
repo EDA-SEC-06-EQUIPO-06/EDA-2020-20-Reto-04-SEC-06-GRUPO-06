@@ -43,11 +43,138 @@ operación seleccionada.
 #  Variables
 # ___________________________________________________
 
+servicefile = 'bus_routes_14000.csv'
+initialStation = None
+recursionLimit = 20000
 
 # ___________________________________________________
 #  Menu principal
 # ___________________________________________________
 
+def printMenu():
+    print("\n")
+    print("*******************************************")
+    print("Bienvenido")
+    print("1- Inicializar Analizador")
+    print("2- Cargar información de viajes en bicicleta")
+    print("3- Conocer la cantidad de clusters de viajes")
+    print("4- Obtener información sobre ruta turística circular")
+    print("5- Conocer las estaciones críticas ")
+    print("6- Conocer ruta turística por resistencia ")
+    print("7- Recomendar rutas por rango de edad ")
+    print("8- Identificar estaciones para publicidad ")
+    print("9- Identificar bicicletas para mantenimiento ")    
+    print("0- Salir")
+    print("*******************************************")
+
+def optionTwo():
+    print("\nCargando información de viajes en bicicleta ....")
+    controller.loadTrips(cont)
+    numedges = controller.totalConnections(cont)
+    numvertex = controller.totalStations(cont)
+    print('Numero de vertices: ' + str(numvertex))
+    print('Numero de arcos: ' + str(numedges))
+    print('El limite de recursion actual: ' + str(sys.getrecursionlimit()))
+    sys.setrecursionlimit(recursionLimit)
+    print('El limite de recursion se ajusta a: ' + str(recursionLimit))
+
+
+def optionThree():
+    sc = controller.getstrongComponents(cont["graph"])  
+    print('\nEl total de clusters en el grafo es: ' +
+          str(controller.getnumSCC(sc)))
+    same_cluster = controller.getsameCC(sc, station1, station2)
+    if same_cluster == True:
+       print("Las dos estaciones pertenecen al mismo cluster")
+    else:
+       print("Las dos estaciones no pertenecen al mismo cluster")  
+
+def optionFour():
+    controller.minimumCostPaths(cont, initialStation)
+
+
+def optionFive():
+    haspath = controller.hasPath(cont, destStation)
+    print('Hay camino entre la estación base : ' +
+          'y la estación: ' + destStation + ': ')
+    print(haspath)
+
+
+def optionSix():
+    path = controller.minimumCostPath(cont, destStation)
+    if path is not None:
+        pathlen = stack.size(path)
+        print('El camino es de longitud: ' + str(pathlen))
+        while (not stack.isEmpty(path)):
+            stop = stack.pop(path)
+            print(stop)
+    else:
+        print('No hay camino')
+
+
+def optionSeven():
+    maxvert, maxdeg = controller.servedRoutes(cont)
+    print('Estación: ' + maxvert + '  Total rutas servidas: '
+          + str(maxdeg))
+
+def optionEight():
+    maxvert, maxdeg = controller.servedRoutes(cont)
+    print('Estación: ' + maxvert + '  Total rutas servidas: '
+          + str(maxdeg))
+
+def optionNine():
+    maxvert, maxdeg = controller.servedRoutes(cont)
+    print('Estación: ' + maxvert + '  Total rutas servidas: '
+          + str(maxdeg))
+
+
 """
 Menu principal
 """
+while True:
+    printMenu()
+    inputs = input('Seleccione una opción para continuar\n>')
+
+    if int(inputs[0]) == 1:
+        print("\nInicializando....")
+        # cont es el controlador que se usará de acá en adelante
+        cont = controller.init()
+
+    elif int(inputs[0]) == 2:
+        executiontime = timeit.timeit(optionTwo, number=1)
+        print("Tiempo de ejecución: " + str(executiontime))
+
+    elif int(inputs[0]) == 3:
+        station1 = input("Primera estación: ")
+        station2 = input("Segunda estación: ") 
+        executiontime = timeit.timeit(optionThree, number=1)
+        print("Tiempo de ejecución: " + str(executiontime))
+
+    elif int(inputs[0]) == 4:
+        initialStation = input(msg)
+        executiontime = timeit.timeit(optionFour, number=1)
+        print("Tiempo de ejecución: " + str(executiontime))
+
+    elif int(inputs[0]) == 5:
+        executiontime = timeit.timeit(optionFive, number=1)
+        print("Tiempo de ejecución: " + str(executiontime))
+
+    elif int(inputs[0]) == 6:
+        executiontime = timeit.timeit(optionSix, number=1)
+        print("Tiempo de ejecución: " + str(executiontime))
+
+    elif int(inputs[0]) == 7:
+        executiontime = timeit.timeit(optionSeven, number=1)
+        print("Tiempo de ejecución: " + str(executiontime))
+
+    elif int(inputs[0]) == 8:
+        executiontime = timeit.timeit(optionEight, number=1)
+        print("Tiempo de ejecución: " + str(executiontime))
+
+    elif int(inputs[0]) == 9:
+        executiontime = timeit.timeit(optionNine, number=1)
+        print("Tiempo de ejecución: " + str(executiontime))
+
+    else:
+        sys.exit(0)
+sys.exit(0)

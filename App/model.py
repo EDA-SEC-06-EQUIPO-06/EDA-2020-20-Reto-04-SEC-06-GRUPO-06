@@ -42,12 +42,82 @@ de creacion y consulta sobre las estructuras de datos.
 #                       API
 # -----------------------------------------------------
 
+def newAnalyzer():
+    """ Inicializa el analizador
+   graph: Grafo para representar las estaciones
+    """
+    try:
+        analyzer = {
+                  'graph': None
+                   }
+        analyzer['graph'] = gr.newGraph(datastructure='ADJ_LIST',
+                                              directed=True,
+                                              size=14000,
+                                              comparefunction=compareStations)
+        return analyzer
+    except Exception as exp:
+        error.reraise(exp, 'model:newAnalyzer')
+
 # Funciones para agregar informacion al grafo
+
+def addTrip(analyzer, trip):
+    try:
+        origin = trip["start station id"]
+        destination = trip["end station id"]
+        duration = int(trip["tripduration"])
+        addStation(analyzer, origin)
+        addStation(analyzer, destination)
+        addConnection(analyzer, origin, destination, duration)
+        return analyzer
+    except Exception as exp:
+        error.reraise(exp, 'model:addTrip')
+
+def addStation(analyzer, stationid):
+    """
+    Adiciona una estación como un vertice del grafo
+    """
+    try:
+        if not gr.containsVertex(analyzer['graph'], stationid):
+            gr.insertVertex(analyzer['graph'], stationid)
+        return analyzer
+    except Exception as exp:
+        error.reraise(exp, 'model:addStation')
+
+def addConnection(analyzer, origin, destination, duration):
+    """
+    Adiciona un arco entre dos estaciones
+    """
+    edge = gr.getEdge(analyzer['graph'], origin, destination)
+    if edge is None:
+        gr.addEdge(analyzer['graph'], origin, destination, duration)
+    return analyzer        
 
 # ==============================
 # Funciones de consulta
 # ==============================
 
+def totalStations(analyzer):
+    """
+    Retorna el total de estaciones (vertices) del grafo
+    """
+    return gr.numVertices(analyzer['graph'])
+
+
+def totalConnections(analyzer):
+    """
+    Retorna el total arcos del grafo
+    """
+    return gr.numEdges(analyzer['graph'])
+
+def strongComponents(graph):
+    return scc.KosarajuSCC(graph)
+
+def numSCC(sc):
+    return scc.connectedComponents(sc)
+
+def sameCC(sc, station1, station2):    
+    return scc.stronglyConnected(sc, station1, station2)    
+    
 # ==============================
 # Funciones Helper
 # ==============================
@@ -55,3 +125,15 @@ de creacion y consulta sobre las estructuras de datos.
 # ==============================
 # Funciones de Comparacion
 # ==============================
+
+def compareStations(station1, station2):
+    """
+    Compara dos estaciones
+    """
+    station2 = station2["key"]
+    if (station1 == station2):
+        return 0
+    elif (station1 > station2):
+        return 1
+    else:
+        return -1
