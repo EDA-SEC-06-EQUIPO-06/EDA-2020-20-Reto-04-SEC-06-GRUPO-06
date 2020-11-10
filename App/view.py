@@ -43,7 +43,6 @@ operación seleccionada.
 #  Variables
 # ___________________________________________________
 
-servicefile = 'bus_routes_14000.csv'
 initialStation = None
 recursionLimit = 20000
 
@@ -71,7 +70,7 @@ def optionTwo():
     print("\nCargando información de viajes en bicicleta ....")
     controller.loadTrips(cont)
     numedges = controller.totalConnections(cont)
-    numvertex = controller.totalStations(cont)
+    numvertex = controller.totalStops(cont)
     print('Numero de vertices: ' + str(numvertex))
     print('Numero de arcos: ' + str(numedges))
     print('El limite de recursion actual: ' + str(sys.getrecursionlimit()))
@@ -80,10 +79,9 @@ def optionTwo():
 
 
 def optionThree():
-    sc = controller.getstrongComponents(cont["graph"])  
     print('\nEl total de clusters en el grafo es: ' +
-          str(controller.getnumSCC(sc)))
-    same_cluster = controller.getsameCC(sc, station1, station2)
+          str(controller.connectedComponents(cont)))
+    same_cluster = controller.getsameCC(cont, station1, station2)
     if same_cluster == True:
        print("Las dos estaciones pertenecen al mismo cluster")
     else:
@@ -137,7 +135,6 @@ while True:
 
     if int(inputs[0]) == 1:
         print("\nInicializando....")
-        # cont es el controlador que se usará de acá en adelante
         cont = controller.init()
 
     elif int(inputs[0]) == 2:
@@ -145,8 +142,8 @@ while True:
         print("Tiempo de ejecución: " + str(executiontime))
 
     elif int(inputs[0]) == 3:
-        station1 = input("Primera estación: ")
-        station2 = input("Segunda estación: ") 
+        station1 = input("Id de la primera estación: ")
+        station2 = input("Id de la segunda estación: ") 
         executiontime = timeit.timeit(optionThree, number=1)
         print("Tiempo de ejecución: " + str(executiontime))
 

@@ -28,6 +28,7 @@ from DISClib.ADT.graph import gr
 from DISClib.ADT import map as m
 from DISClib.ADT import list as lt
 from DISClib.DataStructures import listiterator as it
+from DISClib.DataStructures import edge as e
 from DISClib.Algorithms.Graphs import scc
 from DISClib.Algorithms.Graphs import dijsktra as djk
 from DISClib.Utils import error as error
@@ -44,16 +45,29 @@ de creacion y consulta sobre las estructuras de datos.
 
 def newAnalyzer():
     """ Inicializa el analizador
-   graph: Grafo para representar las estaciones
+
+        stops: Tabla de hash para guardar los vertices del grafo
+        connections: Grafo para representar las rutas entre estaciones
+        components: Almacena la informacion de los componentes conectados
+        paths: Estructura que almancena los caminos de costo minimo desde un
+                vertice determinado a todos los otros vértices del grafo
     """
     try:
         analyzer = {
-                  'graph': None
-                   }
-        analyzer['graph'] = gr.newGraph(datastructure='ADJ_LIST',
+                    'stops': None,
+                    'connections': None,
+                    'components': None,
+                    'paths': None
+                    }
+
+        analyzer['stops'] = m.newMap(numelements=14000,
+                                     maptype='PROBING',
+                                     comparefunction=compareStopIds)
+
+        analyzer['connections'] = gr.newGraph(datastructure='ADJ_LIST',
                                               directed=True,
                                               size=14000,
-                                              comparefunction=compareStations)
+                                              comparefunction=compareStopIds)
         return analyzer
     except Exception as exp:
         error.reraise(exp, 'model:newAnalyzer')
@@ -65,58 +79,67 @@ def addTrip(analyzer, trip):
         origin = trip["start station id"]
         destination = trip["end station id"]
         duration = int(trip["tripduration"])
-        addStation(analyzer, origin)
-        addStation(analyzer, destination)
+        addStop(analyzer, origin)
+        addStop(analyzer, destination)
         addConnection(analyzer, origin, destination, duration)
         return analyzer
     except Exception as exp:
         error.reraise(exp, 'model:addTrip')
 
-def addStation(analyzer, stationid):
+def addStop(analyzer, stopid):
     """
     Adiciona una estación como un vertice del grafo
     """
     try:
-        if not gr.containsVertex(analyzer['graph'], stationid):
-            gr.insertVertex(analyzer['graph'], stationid)
+        if not gr.containsVertex(analyzer['connections'], stopid):
+            gr.insertVertex(analyzer['connections'], stopid)
         return analyzer
     except Exception as exp:
         error.reraise(exp, 'model:addStation')
 
 def addConnection(analyzer, origin, destination, duration):
     """
-    Adiciona un arco entre dos estaciones
+    Adiciona un arco entre dos estaciones. Si el arco existe se actualiza su peso con el promedio.
     """
-    edge = gr.getEdge(analyzer['graph'], origin, destination)
+    edge = gr.getEdge(analyzer['connections'], origin, destination)
     if edge is None:
-        gr.addEdge(analyzer['graph'], origin, destination, duration)
+        gr.addEdge(analyzer['connections'], origin, destination, duration)
+    else:
+        e.updateAverageWeight(edge,duration)
     return analyzer        
 
 # ==============================
 # Funciones de consulta
 # ==============================
 
-def totalStations(analyzer):
+def totalStops(analyzer):
     """
     Retorna el total de estaciones (vertices) del grafo
     """
-    return gr.numVertices(analyzer['graph'])
+    return gr.numVertices(analyzer['connections'])
 
 
 def totalConnections(analyzer):
     """
     Retorna el total arcos del grafo
     """
-    return gr.numEdges(analyzer['graph'])
+    return gr.numEdges(analyzer['connections'])
 
-def strongComponents(graph):
-    return scc.KosarajuSCC(graph)
 
-def numSCC(sc):
-    return scc.connectedComponents(sc)
+def connectedComponents(analyzer):
+    """
+    Calcula los componentes conectados del grafo
+    Se utiliza el algoritmo de Kosaraju
+    """
+    analyzer['components'] = scc.KosarajuSCC(analyzer['connections'])
+    return scc.connectedComponents(analyzer['components'])
 
-def sameCC(sc, station1, station2):    
-    return scc.stronglyConnected(sc, station1, station2)    
+def sameCC(analyzer, station1, station2): 
+    """
+    Dados dos estaciones, informa si están fuertemente conectados o no.
+    """  
+    analyzer['components'] = scc.KosarajuSCC(analyzer['connections'])
+    return scc.stronglyConnected(analyzer['components'], station1, station2)    
     
 # ==============================
 # Funciones Helper
@@ -126,14 +149,26 @@ def sameCC(sc, station1, station2):
 # Funciones de Comparacion
 # ==============================
 
-def compareStations(station1, station2):
+def compareStopIds(stop, keyvaluestop):
     """
     Compara dos estaciones
     """
-    station2 = station2["key"]
-    if (station1 == station2):
+    stopcode = keyvaluestop['key']
+    if (stop == stopcode):
         return 0
-    elif (station1 > station2):
+    elif (stop > stopcode):
         return 1
     else:
         return -1
+
+
+def compareroutes(route1, route2):
+    """
+    Compara dos rutas
+    """
+    if (route1 == route2):
+        return 0
+    elif (route1 > route2):
+        return 1
+    else:
+        return -1 
