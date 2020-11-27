@@ -70,16 +70,10 @@ def loadFile(analyzer, tripfile):
 # ___________________________________________________
 
 def totalStops(analyzer):
-    """
-    Total de paradas de autobus
-    """
     return model.totalStops(analyzer)
 
 
 def totalConnections(analyzer):
-    """
-    Total de enlaces entre las paradas
-    """
     return model.totalConnections(analyzer)
 
 def connectedComponents(analyzer):
