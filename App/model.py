@@ -33,6 +33,7 @@ from DISClib.Algorithms.Graphs import scc
 from DISClib.Algorithms.Graphs import dijsktra as djk
 from DISClib.Utils import error as error
 assert config
+import operator
 
 """
 En este archivo definimos los TADs que vamos a usar y las operaciones
@@ -68,6 +69,9 @@ def newAnalyzer():
                                               directed=True,
                                               size=14000,
                                               comparefunction=compareStopIds)
+        analyzer["trips_age"] = m.newMap(numelements=14000,
+                                   maptype='PROBING',
+                                   comparefunction=compareAges)                                       
         return analyzer
     except Exception as exp:
         error.reraise(exp, 'model:newAnalyzer')
@@ -79,9 +83,11 @@ def addTrip(analyzer, trip):
         origin = trip["start station id"]
         destination = trip["end station id"]
         duration = int(trip["tripduration"])
+        trips_age = [2020 - int(trip["birth year"]),[origin, destination]]
         addStop(analyzer, origin)
         addStop(analyzer, destination)
         addConnection(analyzer, origin, destination, duration)
+        addTripsAge(analyzer, trips_age)
         return analyzer
     except Exception as exp:
         error.reraise(exp, 'model:addTrip')
@@ -93,6 +99,38 @@ def addStop(analyzer, stopid):
     try:
         if not gr.containsVertex(analyzer['connections'], stopid):
             gr.insertVertex(analyzer['connections'], stopid)
+        return analyzer
+    except Exception as exp:
+        error.reraise(exp, 'model:addStation')
+
+def addTripsAge(analyzer, trips_age):
+    try: 
+        age = trips_age[0]
+        if 0 <= age <= 10:
+           rango_edad = "0-10" 
+        if 11 <= age <= 20:
+           rango_edad = "11-20" 
+        if 21 <= age <= 30:
+           rango_edad = "21-30" 
+        if 31 <= age <= 40:
+           rango_edad = "31-40" 
+        if 41 <= age <= 50:
+           rango_edad = "41-50" 
+        if 51 <= age <= 60:
+           rango_edad = "51-60" 
+        if age > 60:
+           rango_edad = "60+"       
+        if m.get(analyzer['trips_age'], rango_edad) is not None:
+           trips_age = m.get(analyzer['trips_age'], rango_edad) 
+           trips_age = [trips_age["key"], trips_age["value"]]
+        if not m.contains(analyzer['trips_age'], rango_edad):    
+           trips_age[1][0] = [trips_age[1][0],1]  
+           trips_age[1][1] = [trips_age[1][1],1]  
+           m.put(analyzer['trips_age'], rango_edad, trips_age[1])
+        elif (trips_age[1][0][1] >= 1) and (trips_age[1][1][1] >= 1):  
+           trips_age[1][0][1] = trips_age[1][0][1] + 1
+           trips_age[1][1][1] = trips_age[1][1][1] + 1 
+           m.put(analyzer['trips_age'], rango_edad, trips_age[1]) 
         return analyzer
     except Exception as exp:
         error.reraise(exp, 'model:addStation')
@@ -139,11 +177,74 @@ def sameCC(analyzer, station1, station2):
     Dados dos estaciones, informa si están fuertemente conectados o no.
     """  
     analyzer['components'] = scc.KosarajuSCC(analyzer['connections'])
-    return scc.stronglyConnected(analyzer['components'], station1, station2)    
-    
+    return scc.stronglyConnected(analyzer['components'], station1, station2) 
+
+def minimumCostPaths(analyzer, initialStation):
+    """
+    Calcula los caminos de costo mínimo desde la estacion initialStation
+    a todos los demas vertices del grafo
+    """
+    analyzer['paths'] = djk.Dijkstra(analyzer['connections'], initialStation)
+    return analyzer
+
+def minimumCostPath(analyzer, destStation):
+    """
+    Retorna el camino de costo minimo entre la estacion de inicio
+    y la estacion destino
+    Se debe ejecutar primero la funcion minimumCostPaths
+    """
+    path = djk.pathTo(analyzer['paths'], destStation)
+    return path
+
+def estaciones_criticas(analyzer):
+    estaciones = m.valueSet(analyzer["trips_age"])
+    estaciones_inicio = {}
+    estaciones_final = {}
+    for i in range(lt.size(estaciones)):
+        station = lt.getElement(estaciones, i) 
+        estaciones_inicio[station[0][1]] = station[0][0]
+        estaciones_final[station[1][0]] = station[1][1]  
+    orden_inicio = sorted(estaciones_inicio, reverse=True)
+    orden_final = sorted(estaciones_final, key=operator.itemgetter(1), reverse=True)
+    if len(orden_inicio) >= 3:        
+       llegada_top = orden_inicio[0], orden_inicio[1], orden_inicio[2]
+    else:
+       llegada_top = orden_inicio[0]  
+    if len(orden_final) >= 3:    
+       salida_top = orden_final[0], orden_final[1], orden_final[2]
+    else:
+       salida_top = orden_final[0]   
+    orden_inicio = sorted(estaciones_inicio.items(), key=operator.itemgetter(1))
+    orden_final = sorted(estaciones_final.items(), key=operator.itemgetter(1))
+    menos_utilizadas = []
+    if len(orden_inicio) >= 3 and len(orden_final) >= 3: 
+       menos_utilizadas.append(int(orden_inicio[0][1]) + orden_final[0][1]) 
+       menos_utilizadas.append(int(orden_inicio[1][1]) + orden_final[1][1]) 
+       menos_utilizadas.append(int(orden_final[2][1]) + orden_final[2][1])
+    else:
+       menos_utilizadas.append([orden_inicio[0][1] + orden_final[0][1], int(orden_inicio[0][0])]) 
+       mayor = max(menos_utilizadas[0])
+       menos_utilizadas = mayor 
+    return llegada_top, salida_top, menos_utilizadas
 # ==============================
 # Funciones Helper
 # ==============================
+
+def recomendadorRutas(analyzer, rango_edad):
+    edades = m.keySet(analyzer["trips_age"])
+    estaciones = m.valueSet(analyzer["trips_age"])
+    mayor_inicio = 0
+    mayor_final = 0
+    for i in range(m.size(analyzer["trips_age"])):
+        station = lt.getElement(estaciones, i)
+        age_range = lt.getElement(edades, i)   
+        if rango_edad == age_range and station[0][1] > mayor_inicio:
+           mayor_inicio = station[0][1]
+           mejor_inicio = station[0][0]
+        if rango_edad == age_range and station[1][1] > mayor_final:
+           mayor_final = station[1][1]
+           mejor_final = station[1][0]
+    return mejor_inicio, mejor_final
 
 # ==============================
 # Funciones de Comparacion
@@ -169,6 +270,15 @@ def compareroutes(route1, route2):
     if (route1 == route2):
         return 0
     elif (route1 > route2):
+        return 1
+    else:
+        return -1 
+
+def compareAges(age1, age2): 
+    age2 = age2["key"]
+    if (age1 == age2):
+        return 0
+    elif (age1 > age2):
         return 1
     else:
         return -1 
