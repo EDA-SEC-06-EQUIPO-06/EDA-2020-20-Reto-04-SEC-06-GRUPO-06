@@ -1,5 +1,5 @@
 
-# LABORATORIO NO. 12: GRAFOS
+# RETO 4
 
 Integrantes grupo 6:
 
