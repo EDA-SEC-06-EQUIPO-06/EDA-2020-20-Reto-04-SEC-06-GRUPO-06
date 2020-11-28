@@ -92,14 +92,22 @@ def optionFour():
 
 
 def optionFive():
-    haspath = controller.hasPath(cont, destStation)
-    print('Hay camino entre la estación base : ' +
-          'y la estación: ' + destStation + ': ')
-    print(haspath)
-
+    res = controller.getestacionesCriticas(cont)
+    print("Las estaciones top 3 de llegada son:",res[0])
+    print("Las estaciones top 3 de salida son:",res[1])
+    print("Las 3 estaciones menos utilizadas son:",res[2])
 
 def optionSix():
-    path = controller.minimumCostPath(cont, destStation)
+    print("Escriba..")
+
+def optionSeven():
+    print("Rangos de edad: 0-10, 11-20, 21-30, 31-40, 41-50, 51-60, 60+")
+    rango_edad = input("Escriba su rango de edad: ")
+    res = controller.getRecomendadorRutas(cont, rango_edad)
+    print("Estación donde se empiezan más viajes:", res[0])
+    print("Estación donde se terminan más viajes:", res[1])
+    controller.getminimumCostPaths(cont, res[0])
+    path = controller.getminimumCostPath(cont, res[1])
     if path is not None:
         pathlen = stack.size(path)
         print('El camino es de longitud: ' + str(pathlen))
@@ -110,11 +118,6 @@ def optionSix():
         print('No hay camino')
 
 
-def optionSeven():
-    maxvert, maxdeg = controller.servedRoutes(cont)
-    print('Estación: ' + maxvert + '  Total rutas servidas: '
-          + str(maxdeg))
-
 def optionEight():
     maxvert, maxdeg = controller.servedRoutes(cont)
     print('Estación: ' + maxvert + '  Total rutas servidas: '
@@ -124,7 +127,6 @@ def optionNine():
     maxvert, maxdeg = controller.servedRoutes(cont)
     print('Estación: ' + maxvert + '  Total rutas servidas: '
           + str(maxdeg))
-
 
 """
 Menu principal

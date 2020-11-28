@@ -87,3 +87,15 @@ def getsameCC(analyzer, station1, station2):
     Bool que informa si dos estaciones están en el mismo componente conectado.
     """
     return model.sameCC(analyzer, station1, station2)
+
+def getRecomendadorRutas(analyzer, rango_edad):
+    return model.recomendadorRutas(analyzer, rango_edad)    
+
+def getminimumCostPaths(analyzer, initialStation):    
+    return model.minimumCostPaths(analyzer, initialStation)
+
+def getminimumCostPath(analyzer, destStation):    
+    return model.minimumCostPath(analyzer, destStation)
+
+def getestacionesCriticas(analyzer):
+    return model.estaciones_criticas(analyzer)
